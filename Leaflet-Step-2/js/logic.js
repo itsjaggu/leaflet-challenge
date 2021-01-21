@@ -1,15 +1,20 @@
 // End point api url
 var earthquakeDataUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
+var platesDataUrl = "https://github.com/fraxen/tectonicplates/blob/master/GeoJSON/PB2002_boundaries.json"
 
 // Getting data from api
-d3.json(earthquakeDataUrl, function(data) {
+d3.json(earthquakeDataUrl, function(earthquakeData) {
     // Passing api response data to createFeatures function
-    console.log(data);
-    createFeatures(data.features);
+    console.log(earthquakeData);
+    // After getting response for earthquake data, getting tectonic plates data
+    d3.json(platesDataUrl, function(platesData) {
+        // Calling createFeatures to load data for map
+        createFeatures(earthquakeData.features, platesData.features);
+    });
 });
 
 // Function to loop through each feature and creating markers for earthquake
-function createFeatures(earthquakeData) {
+function createFeatures(earthquakeData, platesData) {
     function onEachFeature(feature, layer) {
       layer.bindPopup("<h3>" + feature.properties.place
         + "</h3>Magnitude: <strong>" + feature.properties.mag + "</strong><br>Depth: <strong>" 
@@ -31,38 +36,51 @@ function createFeatures(earthquakeData) {
         onEachFeature: onEachFeature
     });
     console.log(earthquakes);
+
+    // Creating GeoJSON layer containing platesData
+    var plates = L.geoJSON(platesData, {
+        color: "red"
+    });
+
     // Calling createMap function to load markers
-    createMap(earthquakes);
+    createMap(earthquakes, plates);
   }
 
 // Function to create the Map with Earthquake Data
-function createMap(earthquakes) {
-    // Defining streetmap and darkmap layers, so user can toggle between dark or street map.
-    var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
-        attribution: "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
-        tileSize: 512,
+function createMap(earthquakes, plates) {
+    // Defining satellite, grayscale and outdoors layers, so user can toggle between these map layers.
+    var satellite = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         maxZoom: 18,
-        zoomOffset: -1,
-        id: "mapbox/streets-v11",
+        id: 'mapbox/satellite-streets-v11',
         accessToken: API_KEY
     });
 
-    var darkmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
-        attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
+    var grayscale = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         maxZoom: 18,
-        id: "dark-v10",
+        id: "mapbox/light-v10",
+        accessToken: API_KEY
+    });
+
+    var outdoors = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+        maxZoom: 18,
+        id: "mapbox/outdoors-v11",
         accessToken: API_KEY
     });
 
     // Defining a baseMaps object to hold base layers
     var baseMaps = {
-        "Street Map": streetmap,
-        "Dark Map": darkmap
+        "Satellite": satellite,
+        "Grayscale": grayscale,
+        "Outdoors": outdoors
     };
 
     // Creating overlay object to hold earthquake data
     var overlayMaps = {
-        Earthquakes: earthquakes
+        Earthquakes: earthquakes,
+        Plates: plates
     };
 
     // Creating map, giving it the streetmap and earthquakes layers to display on load
@@ -71,7 +89,7 @@ function createMap(earthquakes) {
         37.09, -95.71
         ],
         zoom: 5,
-        layers: [streetmap, earthquakes]
+        layers: [satellite, earthquakes]
     });
 
     // Creating a layer control to toggle between baseMaps and overlayMaps
