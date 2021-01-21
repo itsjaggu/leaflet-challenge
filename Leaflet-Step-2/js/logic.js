@@ -1,6 +1,6 @@
 // End point api url
 var earthquakeDataUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
-var platesDataUrl = "https://github.com/fraxen/tectonicplates/blob/master/GeoJSON/PB2002_boundaries.json"
+var platesDataUrl = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json"
 
 // Getting data from api
 d3.json(earthquakeDataUrl, function(earthquakeData) {
@@ -8,6 +8,7 @@ d3.json(earthquakeDataUrl, function(earthquakeData) {
     console.log(earthquakeData);
     // After getting response for earthquake data, getting tectonic plates data
     d3.json(platesDataUrl, function(platesData) {
+        console.log(platesData);
         // Calling createFeatures to load data for map
         createFeatures(earthquakeData.features, platesData.features);
     });
@@ -41,8 +42,8 @@ function createFeatures(earthquakeData, platesData) {
     var plates = L.geoJSON(platesData, {
         color: "red"
     });
-
-    // Calling createMap function to load markers
+    console.log(plates);
+    // Calling createMap function to load layers
     createMap(earthquakes, plates);
   }
 
@@ -79,8 +80,8 @@ function createMap(earthquakes, plates) {
 
     // Creating overlay object to hold earthquake data
     var overlayMaps = {
-        Earthquakes: earthquakes,
-        Plates: plates
+        "Earthquakes": earthquakes,
+        "Tectonic Plates": plates
     };
 
     // Creating map, giving it the streetmap and earthquakes layers to display on load
@@ -88,8 +89,8 @@ function createMap(earthquakes, plates) {
         center: [
         37.09, -95.71
         ],
-        zoom: 5,
-        layers: [satellite, earthquakes]
+        zoom: 4,
+        layers: [satellite, earthquakes, plates]
     });
 
     // Creating a layer control to toggle between baseMaps and overlayMaps
