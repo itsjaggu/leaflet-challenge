@@ -81,6 +81,24 @@ function createMap(earthquakes) {
         collapsed: false
     }).addTo(myMap);
 
+    // Adding legend
+    var legend = L.control({position: 'topright'});
+    legend.onAdd = function (myMap) {
+        var div = L.DomUtil.create('div', 'info legend');
+        labels = ['<strong>Magnitude</strong>'],
+        mag_categories = ['0-1','1-2','2-3','3-4','4-5','5+'];
+        mag_categories_color = [0.5, 1.5, 2.5, 3.5, 4.5, 5.5]
+
+        for (var i = 0; i < mag_categories.length; i++) {
+                div.innerHTML += 
+                labels.push(
+                    '<i style="background:' + getColor(mag_categories_color[i]) + '"></i> ' +
+                (mag_categories[i] ? mag_categories[i] : '+'));
+            }
+            div.innerHTML = labels.join('<br>');
+        return div;
+    };
+    legend.addTo(myMap);
 }
 
 function getColor(magnitude) {
