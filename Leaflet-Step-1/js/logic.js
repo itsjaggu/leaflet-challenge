@@ -12,8 +12,10 @@ function createFeatures(earthquakeData) {
     // Define a function we want to run once for each feature in the features array
     // Give each feature a popup describing the place and time of the earthquake
     function onEachFeature(feature, layer) {
-      layer.bindPopup("<h3>" + feature.properties.place +
-        "</h3><hr><p>" + new Date(feature.properties.time) + "</p>");
+      layer.bindPopup("<h3>" + feature.properties.place
+        + "</h3>Magnitude: <strong>" + feature.properties.mag + "</strong><br>Depth: <strong>" 
+        + feature.geometry.coordinates[2] + "</strong><hr><p>" 
+        + new Date(feature.properties.time) + "</p>");
     }
   
     // Create a GeoJSON layer containing the features array on the earthquakeData object
@@ -22,7 +24,7 @@ function createFeatures(earthquakeData) {
         pointToLayer: function(feature, latlng) {
             return new L.CircleMarker(latlng, {
                 radius: feature.properties.mag * 5,
-                fillColor: getColor(feature.properties.mag),
+                fillColor: getColor(feature.geometry.coordinates[2]),
                 fillOpacity: 1.0,
                 weight: 1,
                 color: "black"
@@ -82,17 +84,17 @@ function createMap(earthquakes) {
     }).addTo(myMap);
 
     // Adding legend
-    var legend = L.control({position: 'topright'});
+    var legend = L.control({position: 'bottomright'});
     legend.onAdd = function (myMap) {
         var div = L.DomUtil.create('div', 'info legend');
-        labels = ['<strong>Magnitude</strong>'],
-        mag_categories = ['0-1','1-2','2-3','3-4','4-5','5+'];
-        mag_categories_color = [0.5, 1.5, 2.5, 3.5, 4.5, 5.5]
+        labels = [],
+        mag_categories = ['-10-10','10-30','30-50','50-70','70-90','90+'];
+        mag_categories_color = [0, 20, 40, 60, 80, 100]
 
         for (var i = 0; i < mag_categories.length; i++) {
                 div.innerHTML += 
                 labels.push(
-                    '<i style="background:' + getColor(mag_categories_color[i]) + '"></i> ' +
+                    '<l style="background-color:' + getColor(mag_categories_color[i]) + '"></l> ' +
                 (mag_categories[i] ? mag_categories[i] : '+'));
             }
             div.innerHTML = labels.join('<br>');
@@ -101,11 +103,11 @@ function createMap(earthquakes) {
     legend.addTo(myMap);
 }
 
-function getColor(magnitude) {
-    return  magnitude > 5  ? '#ee6c6e' :
-            magnitude > 4  ? '#eea770' :
-            magnitude > 3  ? '#f2b957' :
-            magnitude > 2  ? '#f2db5a' :
-            magnitude > 1  ? '#e2f15b' :
-                             '#b8f15a' ;
+function getColor(geoDepth) {
+    return  geoDepth > 90  ? '#FF0000' :
+            geoDepth > 70  ? '#FF9E00' :
+            geoDepth > 50  ? '#FFD300' :
+            geoDepth > 30  ? '#FFF600' :
+            geoDepth > 10  ? '#E5FF00' :
+                             '#00FF00' ;
 }

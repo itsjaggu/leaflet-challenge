@@ -8,3 +8,19 @@ body,
 html {
   height: 100%;
 }
+
+.legend {
+  line-height: 18px;
+  color: black;
+  background-color: white;
+  border: black;
+  padding: 5px 5px 5px 5px;
+}
+
+.legend l {
+  width: 16px;
+  height: 16px;
+  float: left;
+  margin-right: 8px;
+  opacity: 1.0;
+}
