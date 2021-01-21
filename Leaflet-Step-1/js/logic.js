@@ -1,16 +1,15 @@
-//End point api
+// End point api url
 var earthquakeDataUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
 
+// Getting data from api
 d3.json(earthquakeDataUrl, function(data) {
-    // Once we get a response, send the data.features object to the createFeatures function
+    // Passing api response data to createFeatures function
     console.log(data);
     createFeatures(data.features);
 });
 
+// Function to loop through each feature and creating markers for earthquake
 function createFeatures(earthquakeData) {
-
-    // Define a function we want to run once for each feature in the features array
-    // Give each feature a popup describing the place and time of the earthquake
     function onEachFeature(feature, layer) {
       layer.bindPopup("<h3>" + feature.properties.place
         + "</h3>Magnitude: <strong>" + feature.properties.mag + "</strong><br>Depth: <strong>" 
@@ -18,8 +17,7 @@ function createFeatures(earthquakeData) {
         + new Date(feature.properties.time) + "</p>");
     }
   
-    // Create a GeoJSON layer containing the features array on the earthquakeData object
-    // Run the onEachFeature function once for each piece of data in the array
+    // Creating GeoJSON layer containing the features array on the earthquakeData
     var earthquakes = L.geoJSON(earthquakeData, {
         pointToLayer: function(feature, latlng) {
             return new L.CircleMarker(latlng, {
@@ -33,13 +31,13 @@ function createFeatures(earthquakeData) {
         onEachFeature: onEachFeature
     });
     console.log(earthquakes);
-    // Sending our earthquakes layer to the createMap function
+    // Calling createMap function to load markers
     createMap(earthquakes);
   }
 
+// Function to create the Map with Earthquake Data
 function createMap(earthquakes) {
-  
-    // Define streetmap and darkmap layers
+    // Defining streetmap and darkmap layers, so user can toggle between dark or street map.
     var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
         attribution: "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
         tileSize: 512,
@@ -56,18 +54,18 @@ function createMap(earthquakes) {
         accessToken: API_KEY
     });
 
-    // Define a baseMaps object to hold our base layers
+    // Defining a baseMaps object to hold base layers
     var baseMaps = {
         "Street Map": streetmap,
         "Dark Map": darkmap
     };
 
-    // Create overlay object to hold our overlay layer
+    // Creating overlay object to hold earthquake data
     var overlayMaps = {
         Earthquakes: earthquakes
     };
 
-    // Create our map, giving it the streetmap and earthquakes layers to display on load
+    // Creating map, giving it the streetmap and earthquakes layers to display on load
     var myMap = L.map("map", {
         center: [
         37.09, -95.71
@@ -76,9 +74,7 @@ function createMap(earthquakes) {
         layers: [streetmap, earthquakes]
     });
 
-    // Create a layer control
-    // Pass in our baseMaps and overlayMaps
-    // Add the layer control to the map
+    // Creating a layer control to toggle between baseMaps and overlayMaps
     L.control.layers(baseMaps, overlayMaps, {
         collapsed: false
     }).addTo(myMap);
@@ -103,6 +99,7 @@ function createMap(earthquakes) {
     legend.addTo(myMap);
 }
 
+// Function to get color for marker based on depth of Earthquake
 function getColor(geoDepth) {
     return  geoDepth > 90  ? '#FF0000' :
             geoDepth > 70  ? '#FF9E00' :
